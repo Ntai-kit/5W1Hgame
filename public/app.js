@@ -25,8 +25,14 @@ function showError(body) {
   showMessage(`うまくいきませんでした（番号: ${id}）`);
 }
 
+// 通信そのものが失敗したときは status 0 を返し、呼び出し側でエラーとして扱う
 async function request(path, options) {
-  const res = await fetch(API + path, { credentials: "same-origin", ...options });
+  let res;
+  try {
+    res = await fetch(API + path, { credentials: "same-origin", ...options });
+  } catch {
+    return { status: 0, body: null };
+  }
   let body = null;
   try {
     body = await res.json();
