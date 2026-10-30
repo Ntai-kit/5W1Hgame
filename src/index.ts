@@ -1,4 +1,5 @@
 import { loadConfig } from "./config";
+import { handleDraw } from "./gacha";
 import { assertSameOrigin, errorResponse, json } from "./http";
 import { getOrCreatePlayer } from "./player";
 
@@ -17,10 +18,11 @@ export default {
         if (denied) return denied;
       }
       const now = Date.now();
-      const { setCookie } = await getOrCreatePlayer(req, env.DB, now);
+      const { player, setCookie } = await getOrCreatePlayer(req, env.DB, now);
 
       let res: Response;
       if (req.method === "GET" && path === "ping") res = json({ ok: true });
+      else if (req.method === "GET" && path === "gacha") res = await handleDraw(env, player, cfg, now);
       else res = errorResponse(404);
 
       if (setCookie) res.headers.append("Set-Cookie", setCookie);
