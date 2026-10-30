@@ -5,7 +5,7 @@ import { createClient } from "./helpers";
 
 async function clientWithId() {
   const client = createClient();
-  await client.get("/api/ping");
+  await client.get("/api/gacha");
   return { client, playerId: await playerIdOf(client.cookie) };
 }
 

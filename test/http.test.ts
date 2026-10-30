@@ -18,7 +18,7 @@ describe("返事の形と Origin の検査", () => {
       throw new Error("SECRET internal detail players table");
     });
     vi.spyOn(console, "error").mockImplementation(() => undefined);
-    const res = await createClient().get("/api/ping");
+    const res = await createClient().get("/api/gacha");
     expect(res.status).toBe(500);
     const body = await res.json<Record<string, unknown>>();
     expect(Object.keys(body).sort()).toEqual(["error", "requestId"]);
@@ -28,7 +28,7 @@ describe("返事の形と Origin の検査", () => {
   });
 
   it("API の返事には no-store と nosniff が付く", async () => {
-    const res = await createClient().get("/api/ping");
+    const res = await createClient().get("/api/gacha");
     expect(res.headers.get("Cache-Control")).toBe("no-store");
     expect(res.headers.get("X-Content-Type-Options")).toBe("nosniff");
   });

@@ -16,7 +16,7 @@ async function newCombo(): Promise<number[]> {
 // Cookie を持った利用者を作り、その人が combo を引いたことにする
 async function clientWhoDrew(combo: number[]) {
   const client = createClient();
-  await client.get("/api/ping");
+  await client.get("/api/gacha");
   const playerId = await playerIdOf(client.cookie);
   await setLastDraw(playerId, combo);
   return { client, playerId };
