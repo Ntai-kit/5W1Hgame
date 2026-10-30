@@ -1,0 +1,30 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "5w1h-game",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-23",
+  "routes": [
+    { "pattern": "ntaaaaaaaaai.com/games/5w1h*", "zone_name": "ntaaaaaaaaai.com" }
+  ],
+  "assets": {
+    "directory": "./public",
+    "base_path": "/games/5w1h",
+    "binding": "ASSETS",
+    "run_worker_first": ["/games/5w1h/api/*"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "5w1h-game",
+      // wrangler d1 create 5w1h-game で表示された ID に置き換える
+      "database_id": "replace-with-database-id",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "vars": {
+    "ALLOWED_ORIGIN": "https://ntaaaaaaaaai.com",
+    "GACHA_INTERVAL_SEC": "15",
+    "LIKE_PER_DAY": "30",
+    "REPORT_PER_DAY": "20"
+  }
+}
