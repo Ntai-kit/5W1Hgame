@@ -1,0 +1,9 @@
+# 開発メモ（公開しない）
+docs/
+.yomiyasu/
+ゲーム設計図.txt
+
+# 依存パッケージと手元の作業ファイル
+node_modules/
+.wrangler/
+.dev.vars*
