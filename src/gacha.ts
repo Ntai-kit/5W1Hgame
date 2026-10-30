@@ -97,3 +97,28 @@ export async function handleLike(req: Request, env: Env, player: Player, cfg: Co
   if (!liked || liked.meta.changes === 0) return errorResponse(409);
   return json({ sentenceId: row.id, likeCount: row.like_count, liked: true });
 }
+
+const ReportBody = z.object({ partId: z.number().int().positive() });
+
+// 通報は文の中の部分を1つ選んで行う。同じ人が同じ部分を通報できるのは1回
+export async function handleReport(req: Request, env: Env, player: Player, cfg: Config, now: number): Promise<Response> {
+  const parsed = ReportBody.safeParse(await readJson(req));
+  if (!parsed.success) return errorResponse(400);
+  const { partId } = parsed.data;
+  if (player.bannedAt !== null) return errorResponse(403);
+
+  const part = await env.DB.prepare("SELECT 1 FROM parts WHERE id = ? AND hidden = 0").bind(partId).first();
+  if (!part) return errorResponse(404);
+
+  const already = await env.DB.prepare("SELECT 1 FROM reports WHERE part_id = ? AND reporter_id = ?").bind(partId, player.id).first();
+  if (already) return errorResponse(409);
+
+  const limit = await tryConsume(env.DB, player.id, "report", cfg.reportPerDay, DAY_MS, now);
+  if (!limit.ok) return limitedResponse(limit.retryAfterSec);
+
+  const inserted = await env.DB.prepare("INSERT OR IGNORE INTO reports (part_id, reporter_id, created_at) VALUES (?, ?, ?)")
+    .bind(partId, player.id, now)
+    .run();
+  if (inserted.meta.changes === 0) return errorResponse(409);
+  return json({ reported: true });
+}
