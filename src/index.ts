@@ -1,5 +1,5 @@
 import { loadConfig } from "./config";
-import { handleDraw } from "./gacha";
+import { handleDraw, handleLike } from "./gacha";
 import { assertSameOrigin, errorResponse, json } from "./http";
 import { getOrCreatePlayer } from "./player";
 
@@ -23,6 +23,7 @@ export default {
       let res: Response;
       if (req.method === "GET" && path === "ping") res = json({ ok: true });
       else if (req.method === "GET" && path === "gacha") res = await handleDraw(env, player, cfg, now);
+      else if (req.method === "POST" && path === "likes") res = await handleLike(req, env, player, cfg, now);
       else res = errorResponse(404);
 
       if (setCookie) res.headers.append("Set-Cookie", setCookie);

@@ -23,6 +23,8 @@ export function createClient() {
       if (origin !== null) headers.Origin = origin;
       return send(path, { method: "POST", headers, body: JSON.stringify(body) });
     },
+    postRaw: (path: string, body: string) =>
+      send(path, { method: "POST", headers: { "Content-Type": "application/json", Origin: ORIGIN }, body }),
     setCookie: (value: string | null) => {
       cookie = value;
     },

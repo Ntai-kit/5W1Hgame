@@ -1,8 +1,11 @@
+import { z } from "zod";
 import { CATEGORIES, type Category } from "./categories";
 import type { Config } from "./config";
-import { json, limitedResponse } from "./http";
+import { errorResponse, json, limitedResponse } from "./http";
 import type { Player } from "./player";
 import { tryConsume } from "./rate-limit";
+
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 type PartRow = { id: number; category: Category; text: string };
 
@@ -30,4 +33,67 @@ export async function handleDraw(env: Env, player: Player, cfg: Config, now: num
     .run();
 
   return json({ parts: parts.map((p) => ({ id: p.id, category: p.category, text: p.text })) });
+}
+
+const COMBO_WHERE =
+  "mode = 'gacha' AND when_part_id = ? AND where_part_id = ? AND who_part_id = ? AND why_part_id = ? AND how_part_id = ? AND what_part_id = ?";
+
+const LikeBody = z.object({ partIds: z.array(z.number().int().positive()).length(CATEGORIES.length) });
+
+async function readJson(req: Request): Promise<unknown> {
+  try {
+    return await req.json();
+  } catch {
+    return undefined;
+  }
+}
+
+function sameCombo(a: readonly number[], b: readonly number[]): boolean {
+  return a.length === b.length && a.every((v, i) => v === b[i]);
+}
+
+// その人が最後に引いた組み合わせにだけ、いいねを押せる。文はいいねのときに初めて保存する
+export async function handleLike(req: Request, env: Env, player: Player, cfg: Config, now: number): Promise<Response> {
+  const parsed = LikeBody.safeParse(await readJson(req));
+  if (!parsed.success) return errorResponse(400);
+  const partIds = parsed.data.partIds;
+  if (player.bannedAt !== null) return errorResponse(403);
+
+  const draw = await env.DB.prepare(
+    "SELECT when_part_id, where_part_id, who_part_id, why_part_id, how_part_id, what_part_id FROM last_draws WHERE player_id = ?",
+  )
+    .bind(player.id)
+    .first<Record<string, number>>();
+  if (!draw || !sameCombo(CATEGORIES.map((c) => draw[`${c}_part_id`] ?? 0), partIds)) return errorResponse(400);
+
+  const already = await env.DB.prepare(`SELECT 1 FROM likes JOIN sentences ON sentences.id = likes.sentence_id WHERE likes.player_id = ? AND ${COMBO_WHERE}`)
+    .bind(player.id, ...partIds)
+    .first();
+  if (already) return errorResponse(409);
+
+  const limit = await tryConsume(env.DB, player.id, "like", cfg.likePerDay, DAY_MS, now);
+  if (!limit.ok) return limitedResponse(limit.retryAfterSec);
+
+  // 文の保存、いいねの追加、件数の更新を1つのトランザクションで行う
+  const [, liked, , sentence] = await env.DB.batch([
+    env.DB.prepare(
+      `INSERT INTO sentences (mode, when_part_id, where_part_id, who_part_id, why_part_id, how_part_id, what_part_id, created_at)
+       VALUES ('gacha', ?, ?, ?, ?, ?, ?, ?)
+       ON CONFLICT (when_part_id, where_part_id, who_part_id, why_part_id, how_part_id, what_part_id) WHERE mode = 'gacha' DO NOTHING`,
+    ).bind(...partIds, now),
+    env.DB.prepare(`INSERT OR IGNORE INTO likes (sentence_id, player_id, created_at) SELECT id, ?, ? FROM sentences WHERE ${COMBO_WHERE}`).bind(
+      player.id,
+      now,
+      ...partIds,
+    ),
+    env.DB.prepare(`UPDATE sentences SET like_count = (SELECT COUNT(*) FROM likes WHERE sentence_id = sentences.id) WHERE ${COMBO_WHERE}`).bind(
+      ...partIds,
+    ),
+    env.DB.prepare(`SELECT id, like_count FROM sentences WHERE ${COMBO_WHERE}`).bind(...partIds),
+  ]);
+  const row = sentence?.results[0] as { id: number; like_count: number } | undefined;
+  if (!row) throw new Error("いいねした文が見つからない");
+  // 同時に送られた2回目は、いいねが増えないので重複として返す
+  if (!liked || liked.meta.changes === 0) return errorResponse(409);
+  return json({ sentenceId: row.id, likeCount: row.like_count, liked: true });
 }
