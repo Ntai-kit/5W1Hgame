@@ -6,7 +6,7 @@ import { handleDraw } from "../src/gacha";
 import { insertPartsForAllCategories, insertPlayer, playerIdOf } from "./fixtures";
 import { createClient } from "./helpers";
 
-type DrawBody = { parts: { id: number; category: string; text: string }[] };
+type DrawBody = { parts: { id: number; category: string; text: string }[]; cooldownSec: number };
 
 let hiddenIds: number[] = [];
 
@@ -21,6 +21,7 @@ describe("ガチャを引く", () => {
     const body = await res.json<DrawBody>();
     expect(body.parts.map((p) => p.category)).toEqual([...CATEGORIES]);
     for (const p of body.parts) expect(typeof p.text).toBe("string");
+    expect(body.cooldownSec).toBe(15);
   });
 
   it("hidden の部分は出ない", async () => {

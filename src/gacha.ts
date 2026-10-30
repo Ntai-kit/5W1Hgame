@@ -32,7 +32,7 @@ export async function handleDraw(env: Env, player: Player, cfg: Config, now: num
     .bind(player.id, ...parts.map((p) => p.id), now)
     .run();
 
-  return json({ parts: parts.map((p) => ({ id: p.id, category: p.category, text: p.text })) });
+  return json({ parts: parts.map((p) => ({ id: p.id, category: p.category, text: p.text })), cooldownSec: cfg.gachaIntervalSec });
 }
 
 const COMBO_WHERE =

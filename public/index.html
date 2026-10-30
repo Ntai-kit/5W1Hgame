@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>5W1Hゲーム</title>
+  <link rel="stylesheet" href="/games/5w1h/style.css">
+  <script src="/games/5w1h/app.js" defer></script>
+</head>
+<body>
+  <main>
+    <h1>5W1Hゲーム</h1>
+    <p class="lead">いつ、どこで、だれが、なぜ、どうやって、なにをした。6つの部分をランダムに組み合わせた文を引きます。</p>
+
+    <button type="button" id="draw" class="primary">引く</button>
+
+    <p id="sentence" class="sentence" aria-live="polite"></p>
+
+    <div id="actions" class="actions" hidden>
+      <button type="button" id="like">いいね</button>
+      <span id="like-count" class="count"></span>
+      <button type="button" id="report-open">通報</button>
+    </div>
+
+    <div id="report" class="report" hidden>
+      <p>不適切な部分を1つ選んでください。</p>
+      <ul id="report-parts"></ul>
+      <button type="button" id="report-cancel">やめる</button>
+    </div>
+
+    <p id="message" class="message" role="status"></p>
+  </main>
+  <footer>
+    <a href="https://ntaaaaaaaaai.com/">ntaaaaaaaaai.com</a>
+  </footer>
+</body>
+</html>
