@@ -3,7 +3,7 @@ import { CATEGORIES, type Category } from "../src/categories";
 
 export async function insertPart(category: Category, text: string, hidden = false): Promise<number> {
   const row = await env.DB.prepare(
-    "INSERT INTO parts (category, text, source, hidden, created_at) VALUES (?, ?, 'seed', ?, 0) RETURNING id",
+    "INSERT INTO parts (category, text, source, hidden, created_at) VALUES (?, ?, 'sync', ?, 1) RETURNING id",
   )
     .bind(category, text, hidden ? 1 : 0)
     .first<{ id: number }>();
