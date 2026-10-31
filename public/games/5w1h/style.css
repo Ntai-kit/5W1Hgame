@@ -4,7 +4,22 @@
   --fg: #1d1d1f;
   --muted: #6e6e73;
   --accent: #0066cc;
-  --border: #d2d2d7;
+  --on-accent: #ffffff;
+  --border: #949497;
+  --surface: #f5f5f7;
+  /* 部分ごとの色。--c-* は名前と枠、--t-* は合わせたときの背景 */
+  --c-when: #0066cc;
+  --c-where: #24883c;
+  --c-who: #c93400;
+  --c-why: #8944ab;
+  --c-how: #007d8a;
+  --c-what: #d70015;
+  --t-when: #e5f0fb;
+  --t-where: #e6f3e9;
+  --t-who: #f9ebe5;
+  --t-why: #f1e9f5;
+  --t-how: #e0f0f1;
+  --t-what: #fbe5e7;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -13,12 +28,31 @@
     --fg: #f5f5f7;
     --muted: #a1a1a6;
     --accent: #4da3ff;
-    --border: #3a3a3c;
+    --on-accent: #1c1c1e;
+    --border: #676768;
+    --surface: #2c2c2e;
+    --c-when: #4da3ff;
+    --c-where: #30d158;
+    --c-who: #ff9f0a;
+    --c-why: #bf5af2;
+    --c-how: #40c8e0;
+    --c-what: #ff6961;
+    --t-when: #1f3349;
+    --t-where: #1d3a25;
+    --t-who: #43321a;
+    --t-why: #3a2647;
+    --t-how: #1b3c43;
+    --t-what: #4a2523;
   }
 }
 
 * {
   box-sizing: border-box;
+}
+
+/* display を指定した要素でも、hidden を付けたら隠す */
+[hidden] {
+  display: none !important;
 }
 
 body {
@@ -36,7 +70,7 @@ main {
 }
 
 .lead,
-.count,
+.hint,
 footer {
   color: var(--muted);
 }
@@ -60,22 +94,144 @@ button:disabled {
 .primary {
   border-color: var(--accent);
   background: var(--accent);
-  color: #ffffff;
-  min-width: 8rem;
+  color: var(--on-accent);
+  font-weight: 600;
+  min-width: 10rem;
+}
+
+/* 次に引けるまでは灰色にし、文言でも「あと N 秒」と伝える */
+.primary:disabled {
+  border-color: var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  opacity: 1;
+}
+
+.quiet {
+  border-color: transparent;
+  color: var(--muted);
+  font-size: 0.9rem;
+  padding: 0 8px;
+}
+
+#like[aria-pressed="true"] {
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+  opacity: 1;
+}
+
+.placeholder {
+  margin: 28px 0 12px;
+  padding: 16px;
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  color: var(--muted);
+  font-size: 1.1rem;
+  text-align: center;
 }
 
 .sentence {
-  min-height: 3em;
-  margin: 24px 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 28px 0 12px;
   font-size: 1.4rem;
+  line-height: 1.45;
   overflow-wrap: anywhere;
+}
+
+.part {
+  display: inline-block;
+  padding: 2px 8px 4px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.12s;
+}
+
+.part.when { --c: var(--c-when); --t: var(--t-when); }
+.part.where { --c: var(--c-where); --t: var(--t-where); }
+.part.who { --c: var(--c-who); --t: var(--t-who); }
+.part.why { --c: var(--c-why); --t: var(--t-why); }
+.part.how { --c: var(--c-how); --t: var(--t-how); }
+.part.what { --c: var(--c-what); --t: var(--t-what); }
+
+/* 名前の場所は先に空けておき、出したときに文が動かないようにする */
+.part-label {
+  display: block;
+  height: 1.1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.1rem;
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+
+.part-text {
+  border-bottom: 2px dotted var(--border);
+}
+
+.part:last-child .part-text::after {
+  content: "。";
+}
+
+.part:hover,
+.part:focus-visible,
+.part.open {
+  background: var(--t);
+}
+
+.part:hover .part-label,
+.part:focus-visible .part-label,
+.part.open .part-label {
+  opacity: 0.8;
+}
+
+.part:hover .part-text,
+.part:focus-visible .part-text,
+.part.open .part-text {
+  border-bottom-color: transparent;
+}
+
+.part:focus-visible {
+  outline: 3px solid var(--c);
+  outline-offset: 2px;
+}
+
+/* 画面には出さず、読み上げソフトにだけ伝える */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.hint {
+  margin: 0 0 16px;
+  font-size: 0.8rem;
+}
+
+.hint-touch {
+  display: none;
+}
+
+@media (hover: none) {
+  .hint-hover {
+    display: none;
+  }
+
+  .hint-touch {
+    display: inline;
+  }
 }
 
 .actions {
   display: flex;
-  flex-wrap: wrap;
   gap: 8px;
   align-items: center;
+  justify-content: space-between;
 }
 
 .report ul {
