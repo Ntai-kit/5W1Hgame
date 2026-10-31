@@ -8,7 +8,6 @@
   ],
   "assets": {
     "directory": "./public",
-    "base_path": "/games/5w1h",
     "binding": "ASSETS",
     "run_worker_first": ["/games/5w1h/api/*"]
   },
