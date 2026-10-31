@@ -1,0 +1,28 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "5w1h-game",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-23",
+  "routes": [
+    { "pattern": "ntaaaaaaaaai.com/games/5w1h*", "zone_name": "ntaaaaaaaaai.com" }
+  ],
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "run_worker_first": ["/games/5w1h/api/*"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "5w1h-game",
+      "database_id": "0b40faea-28a5-4f14-a2b6-bc2bb51318cc",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "vars": {
+    "ALLOWED_ORIGIN": "https://ntaaaaaaaaai.com",
+    "GACHA_INTERVAL_SEC": "15",
+    "LIKE_PER_DAY": "30",
+    "REPORT_PER_DAY": "20"
+  }
+}
