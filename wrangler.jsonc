@@ -16,8 +16,7 @@
     {
       "binding": "DB",
       "database_name": "5w1h-game",
-      // wrangler d1 create 5w1h-game で表示された ID に置き換える
-      "database_id": "replace-with-database-id",
+      "database_id": "0b40faea-28a5-4f14-a2b6-bc2bb51318cc",
       "migrations_dir": "migrations"
     }
   ],
