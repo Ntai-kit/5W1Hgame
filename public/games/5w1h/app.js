@@ -3,15 +3,25 @@
 const API = "/games/5w1h/api";
 
 const drawButton = document.getElementById("draw");
+const placeholderEl = document.getElementById("placeholder");
 const sentenceEl = document.getElementById("sentence");
+const hintEl = document.getElementById("hint");
 const actionsEl = document.getElementById("actions");
 const likeButton = document.getElementById("like");
-const likeCountEl = document.getElementById("like-count");
 const reportOpenButton = document.getElementById("report-open");
 const reportEl = document.getElementById("report");
 const reportPartsEl = document.getElementById("report-parts");
 const reportCancelButton = document.getElementById("report-cancel");
 const messageEl = document.getElementById("message");
+
+const CATEGORY_LABELS = {
+  when: "いつ",
+  where: "どこで",
+  who: "だれが",
+  why: "なぜ",
+  how: "どうやって",
+  what: "なにをした",
+};
 
 let currentParts = [];
 let countdownTimer = null;
@@ -64,14 +74,48 @@ function startCountdown(seconds) {
   }, 1000);
 }
 
+// 部分ごとに名前を付ける。名前は合わせたときだけ見せ、読み上げソフトには常に伝える
 function renderSentence(parts) {
   sentenceEl.replaceChildren();
   for (const part of parts) {
+    const label = CATEGORY_LABELS[part.category] ?? "";
     const span = document.createElement("span");
-    span.className = "part";
-    span.textContent = part.text;
+    span.className = `part ${part.category}`;
+    span.tabIndex = 0;
+
+    const labelEl = document.createElement("span");
+    labelEl.className = "part-label";
+    labelEl.setAttribute("aria-hidden", "true");
+    labelEl.textContent = label;
+
+    const spokenEl = document.createElement("span");
+    spokenEl.className = "visually-hidden";
+    spokenEl.textContent = `${label}、`;
+
+    const textEl = document.createElement("span");
+    textEl.className = "part-text";
+    textEl.textContent = part.text;
+
+    span.append(labelEl, spokenEl, textEl);
     sentenceEl.append(span);
   }
+  placeholderEl.hidden = true;
+  sentenceEl.hidden = false;
+  hintEl.hidden = false;
+}
+
+// カーソルのない端末では、タップした部分だけ名前を出し入れする
+function togglePart(event) {
+  const part = event.target.closest(".part");
+  if (!part) return;
+  const wasOpen = part.classList.contains("open");
+  for (const open of sentenceEl.querySelectorAll(".part.open")) open.classList.remove("open");
+  if (!wasOpen) part.classList.add("open");
+}
+
+function setLiked(likeCount) {
+  likeButton.setAttribute("aria-pressed", "true");
+  likeButton.textContent = typeof likeCount === "number" ? `いいね済み ${likeCount}` : "いいね済み";
 }
 
 function closeReport() {
@@ -95,7 +139,8 @@ async function draw() {
   renderSentence(currentParts);
   actionsEl.hidden = false;
   likeButton.disabled = false;
-  likeCountEl.textContent = "";
+  likeButton.setAttribute("aria-pressed", "false");
+  likeButton.textContent = "いいね";
   reportOpenButton.disabled = false;
   startCountdown(body.cooldownSec);
 }
@@ -104,8 +149,9 @@ async function like() {
   likeButton.disabled = true;
   const { status, body } = await postJson("/likes", { partIds: currentParts.map((p) => p.id) });
   if (status === 200 && body) {
-    likeCountEl.textContent = `${body.likeCount} 件`;
+    setLiked(body.likeCount);
   } else if (status === 409) {
+    setLiked(null);
     showMessage("この文にはもういいねしています。");
   } else if (status === 429) {
     showMessage("今日はもういいねできません。");
@@ -121,7 +167,7 @@ function openReport() {
     const li = document.createElement("li");
     const button = document.createElement("button");
     button.type = "button";
-    button.textContent = part.text;
+    button.textContent = `${CATEGORY_LABELS[part.category] ?? ""}: ${part.text}`;
     button.addEventListener("click", () => report(part.id));
     li.append(button);
     reportPartsEl.append(li);
@@ -145,6 +191,7 @@ async function report(partId) {
 }
 
 drawButton.addEventListener("click", draw);
+sentenceEl.addEventListener("click", togglePart);
 likeButton.addEventListener("click", like);
 reportOpenButton.addEventListener("click", openReport);
 reportCancelButton.addEventListener("click", closeReport);

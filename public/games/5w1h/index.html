@@ -14,12 +14,16 @@
 
     <button type="button" id="draw" class="primary">引く</button>
 
-    <p id="sentence" class="sentence" aria-live="polite"></p>
+    <p id="placeholder" class="placeholder">「引く」を押すと、ここに文が出ます</p>
+    <p id="sentence" class="sentence" aria-live="polite" hidden></p>
+    <p id="hint" class="hint" hidden>
+      <span class="hint-hover">部分にカーソルを合わせると、名前が出ます。</span>
+      <span class="hint-touch">部分をタップすると、名前が出ます。</span>
+    </p>
 
     <div id="actions" class="actions" hidden>
-      <button type="button" id="like">いいね</button>
-      <span id="like-count" class="count"></span>
-      <button type="button" id="report-open">通報</button>
+      <button type="button" id="like" aria-pressed="false">いいね</button>
+      <button type="button" id="report-open" class="quiet">通報…</button>
     </div>
 
     <div id="report" class="report" hidden>
