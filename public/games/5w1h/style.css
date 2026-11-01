@@ -255,3 +255,54 @@ footer {
 footer a {
   color: inherit;
 }
+
+/* ランキング */
+.nav a {
+  color: var(--accent);
+}
+
+.periods {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0 8px;
+}
+
+.periods button[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
+}
+
+.ranking {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ranking li {
+  display: grid;
+  grid-template-columns: 3.5rem 1fr;
+  column-gap: 8px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.ranking .rank {
+  grid-row: span 2;
+  font-weight: 600;
+  padding-top: 1.3rem;
+}
+
+.ranking .sentence {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+/* 部分の内側の余白にそろえ、文の字の左端に合わせる */
+.ranking .likes {
+  padding-left: 8px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
