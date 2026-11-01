@@ -45,3 +45,27 @@ export async function playerIdOf(cookie: string | null): Promise<string> {
   if (!id) throw new Error("no cookie");
   return id;
 }
+
+// 分類ごとに新しい部分を1つずつ入れ、ID を分類の順で返す
+export async function insertCombo(): Promise<number[]> {
+  const ids: number[] = [];
+  for (const c of CATEGORIES) ids.push(await insertPart(c, `${c}${crypto.randomUUID().slice(0, 8)}`));
+  return ids;
+}
+
+// 文を直接入れる。ランキングは like_count だけを見るので、likes の行は作らない
+export async function insertSentence(
+  partIds: number[],
+  likeCount: number,
+  createdAt: number,
+  mode: "gacha" | "sync" = "gacha",
+): Promise<number> {
+  const row = await env.DB.prepare(
+    `INSERT INTO sentences (mode, when_part_id, where_part_id, who_part_id, why_part_id, how_part_id, what_part_id, like_count, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id`,
+  )
+    .bind(mode, ...partIds, likeCount, createdAt)
+    .first<{ id: number }>();
+  if (!row) throw new Error("insertSentence failed");
+  return row.id;
+}
