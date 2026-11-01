@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ランキング - 5W1Hゲーム</title>
+  <link rel="stylesheet" href="/games/5w1h/style.css">
+  <script src="/games/5w1h/sentence.js" defer></script>
+  <script src="/games/5w1h/ranking/ranking.js" defer></script>
+</head>
+<body>
+  <main>
+    <p class="nav"><a href="/games/5w1h/">ガチャに戻る</a></p>
+    <h1>ランキング</h1>
+    <p class="lead">いいねの多い文を、上から50件まで並べます。</p>
+
+    <div class="periods" role="group" aria-label="期間">
+      <button type="button" data-period="today" aria-pressed="true">今日</button>
+      <button type="button" data-period="week" aria-pressed="false">今週</button>
+      <button type="button" data-period="all" aria-pressed="false">すべての期間</button>
+    </div>
+
+    <p class="hint">
+      <span class="hint-hover">部分にカーソルを合わせると、名前が出ます。</span>
+      <span class="hint-touch">部分をタップすると、名前が出ます。</span>
+    </p>
+
+    <p id="status" class="message" role="status">読み込んでいます…</p>
+    <ol id="list" class="ranking"></ol>
+  </main>
+  <footer>
+    <a href="https://ntaaaaaaaaai.com/">ntaaaaaaaaai.com</a>
+  </footer>
+</body>
+</html>
